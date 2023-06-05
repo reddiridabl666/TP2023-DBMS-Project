@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"database/sql"
 	"net/http"
 
 	"forum/internal/pkg/domain"
@@ -12,6 +13,12 @@ import (
 
 type UserHandler struct {
 	users *repository.UserRepository
+}
+
+func NewUserHandler(db *sql.DB) *UserHandler {
+	return &UserHandler{
+		users: repository.NewUserRepository(db),
+	}
 }
 
 func (h *UserHandler) CreateUser(c echo.Context) error {

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"forum/internal/pkg/domain"
-	"forum/internal/pkg/utils"
 )
 
 type ServiceRepository struct {
@@ -17,21 +16,23 @@ func NewServiceRepository(db *sql.DB) *ServiceRepository {
 	}
 }
 
-var tables = []string{"vote", "post", "thread", "forum", "users"}
+// var tables = []string{"vote", "post", "thread", "forum", "users"}
 
 func (repo *ServiceRepository) Clear() error {
-	return utils.Tx(repo.db, func(tx *sql.Tx) error {
-		for _, table := range tables {
-			_, err := tx.Exec("TRUNCATE " + table)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	// return utils.Tx(repo.db, func(tx *sql.Tx) error {
+	// 	for _, table := range tables {
+	// 		_, err := tx.Exec("TRUNCATE " + table)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// 	return nil
+	// })
+	_, err := repo.db.Exec("TRUNCATE users CASCADE")
+	return err
 }
 
-func (repo *ServiceRepository) Stats() (*domain.ServiceInfo, error) {
+func (repo *ServiceRepository) Status() (*domain.ServiceInfo, error) {
 	res := &domain.ServiceInfo{}
 
 	err := repo.db.QueryRow("SELECT count(*) FROM users").Scan(&res.User)

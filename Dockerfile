@@ -12,3 +12,5 @@ ENV POSTGRES_PASSWORD=12345
 ENV POSTGRES_DB=forum
 
 RUN chmod 777 /docker-entrypoint-initdb.d/run.sh
+
+EXPOSE 5000
