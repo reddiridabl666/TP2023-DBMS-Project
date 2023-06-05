@@ -6,9 +6,9 @@ import (
 
 //easyjson:json
 type User struct {
-	Id          int
-	Nickname    string
-	Fullname    string
-	Description nullable.String
-	Email       string
+	Id       int
+	Nickname string
+	Fullname string
+	About    nullable.String
+	Email    string
 }

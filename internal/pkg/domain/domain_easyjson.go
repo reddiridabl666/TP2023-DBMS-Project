@@ -42,8 +42,8 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain(in *jlexer.Lexer, out *User) {
 			out.Nickname = string(in.String())
 		case "fullname":
 			out.Fullname = string(in.String())
-		case "description":
-			(out.Description).UnmarshalEasyJSON(in)
+		case "about":
+			(out.About).UnmarshalEasyJSON(in)
 		case "email":
 			out.Email = string(in.String())
 		default:
@@ -76,9 +76,9 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain(out *jwriter.Writer, in User) 
 		out.String(string(in.Fullname))
 	}
 	{
-		const prefix string = ",\"description\":"
+		const prefix string = ",\"about\":"
 		out.RawString(prefix)
-		(in.Description).MarshalEasyJSON(out)
+		(in.About).MarshalEasyJSON(out)
 	}
 	{
 		const prefix string = ",\"email\":"
@@ -96,4 +96,56 @@ func (v User) MarshalEasyJSON(w *jwriter.Writer) {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson3e1fa5ecDecodeForumInternalPkgDomain(l, v)
+}
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain1(in *jlexer.Lexer, out *ErrorMessage) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "message":
+			out.Message = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain1(out *jwriter.Writer, in ErrorMessage) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"message\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.Message))
+	}
+	out.RawByte('}')
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ErrorMessage) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain1(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ErrorMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain1(l, v)
 }
