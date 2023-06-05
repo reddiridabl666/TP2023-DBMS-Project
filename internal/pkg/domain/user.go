@@ -6,7 +6,7 @@ import (
 
 //easyjson:json
 type User struct {
-	Id       int
+	Id       int `json:"-"`
 	Nickname string
 	Fullname string
 	About    nullable.String

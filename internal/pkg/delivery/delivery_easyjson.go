@@ -16,3 +16,56 @@ var (
 	_ *jwriter.Writer
 	_ easyjson.Marshaler
 )
+
+func easyjsonCea158a8DecodeForumInternalPkgDelivery(in *jlexer.Lexer, out *ErrorMessage) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "message":
+			out.Message = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonCea158a8EncodeForumInternalPkgDelivery(out *jwriter.Writer, in ErrorMessage) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"message\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.Message))
+	}
+	out.RawByte('}')
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ErrorMessage) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonCea158a8EncodeForumInternalPkgDelivery(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ErrorMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonCea158a8DecodeForumInternalPkgDelivery(l, v)
+}
