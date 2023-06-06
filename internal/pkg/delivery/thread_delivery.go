@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"database/sql"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,9 +16,9 @@ type ThreadHandler struct {
 	threads *usecase.ThreadUsecase
 }
 
-func NewThreadHandler(db *sql.DB) *ThreadHandler {
+func NewThreadHandler(threads *usecase.ThreadUsecase) *ThreadHandler {
 	return &ThreadHandler{
-		threads: usecase.NewThreadUsecase(db),
+		threads: threads,
 	}
 }
 

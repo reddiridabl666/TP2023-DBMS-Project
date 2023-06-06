@@ -397,7 +397,71 @@ func (v ServiceInfo) MarshalEasyJSON(w *jwriter.Writer) {
 func (v *ServiceInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson3e1fa5ecDecodeForumInternalPkgDomain4(l, v)
 }
-func easyjson3e1fa5ecDecodeForumInternalPkgDomain5(in *jlexer.Lexer, out *Post) {
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain5(in *jlexer.Lexer, out *PostBatch) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		in.Skip()
+		*out = nil
+	} else {
+		in.Delim('[')
+		if *out == nil {
+			if !in.IsDelim(']') {
+				*out = make(PostBatch, 0, 8)
+			} else {
+				*out = PostBatch{}
+			}
+		} else {
+			*out = (*out)[:0]
+		}
+		for !in.IsDelim(']') {
+			var v7 *Post
+			if in.IsNull() {
+				in.Skip()
+				v7 = nil
+			} else {
+				if v7 == nil {
+					v7 = new(Post)
+				}
+				(*v7).UnmarshalEasyJSON(in)
+			}
+			*out = append(*out, v7)
+			in.WantComma()
+		}
+		in.Delim(']')
+	}
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in PostBatch) {
+	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		out.RawString("null")
+	} else {
+		out.RawByte('[')
+		for v8, v9 := range in {
+			if v8 > 0 {
+				out.RawByte(',')
+			}
+			if v9 == nil {
+				out.RawString("null")
+			} else {
+				(*v9).MarshalEasyJSON(out)
+			}
+		}
+		out.RawByte(']')
+	}
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v PostBatch) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain5(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *PostBatch) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain5(l, v)
+}
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain6(in *jlexer.Lexer, out *Post) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -419,7 +483,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain5(in *jlexer.Lexer, out *Post) 
 		case "id":
 			out.Id = int64(in.Int64())
 		case "parent":
-			out.Parent = int64(in.Int64())
+			(out.Parent).UnmarshalEasyJSON(in)
 		case "author":
 			out.Author = string(in.String())
 		case "message":
@@ -444,7 +508,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain5(in *jlexer.Lexer, out *Post) 
 		in.Consumed()
 	}
 }
-func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in Post) {
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain6(out *jwriter.Writer, in Post) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -453,10 +517,10 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in Post)
 		out.RawString(prefix[1:])
 		out.Int64(int64(in.Id))
 	}
-	{
+	if (in.Parent).IsDefined() {
 		const prefix string = ",\"parent\":"
 		out.RawString(prefix)
-		out.Int64(int64(in.Parent))
+		(in.Parent).MarshalEasyJSON(out)
 	}
 	{
 		const prefix string = ",\"author\":"
@@ -468,7 +532,7 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in Post)
 		out.RawString(prefix)
 		out.String(string(in.Message))
 	}
-	{
+	if in.IsEdited {
 		const prefix string = ",\"isEdited\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IsEdited))
@@ -493,14 +557,14 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in Post)
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Post) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3e1fa5ecEncodeForumInternalPkgDomain5(w, v)
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain6(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Post) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3e1fa5ecDecodeForumInternalPkgDomain5(l, v)
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain6(l, v)
 }
-func easyjson3e1fa5ecDecodeForumInternalPkgDomain6(in *jlexer.Lexer, out *Forum) {
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain7(in *jlexer.Lexer, out *Forum) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -541,7 +605,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain6(in *jlexer.Lexer, out *Forum)
 		in.Consumed()
 	}
 }
-func easyjson3e1fa5ecEncodeForumInternalPkgDomain6(out *jwriter.Writer, in Forum) {
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain7(out *jwriter.Writer, in Forum) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -580,10 +644,10 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain6(out *jwriter.Writer, in Forum
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Forum) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3e1fa5ecEncodeForumInternalPkgDomain6(w, v)
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain7(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Forum) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3e1fa5ecDecodeForumInternalPkgDomain6(l, v)
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain7(l, v)
 }

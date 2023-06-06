@@ -95,6 +95,23 @@ create or replace function update_thread_count() returns trigger as $$
     end;
 $$ language plpgsql;
 
+create or replace function validate_parent_id() returns trigger as $$
+    begin
+        if (NEW.parent_id IS NULL) then
+            raise warning 'parent id is null';
+            return NEW;
+        end if;
+
+        if (NEW.thread_id != (SELECT thread_id FROM post WHERE id = NEW.parent_id)) then
+            raise warning 'Thread id should match with parent`s';
+            raise exception 'Thread id should match with parent`s' USING ERRCODE = '23000';
+        end if;
+
+        raise warning 'Thread id is ok';
+        return NEW;
+    end;
+$$ language plpgsql;
+
 create trigger on_vote
 after insert or update or delete on Vote
     for each row execute procedure update_vote_count();
@@ -106,3 +123,7 @@ after insert or delete on Post
 create trigger on_thread
 after insert or delete on Thread
     for each row execute procedure update_thread_count();
+
+create trigger post_parent_id_validation
+before insert on Post
+    for each row execute procedure validate_parent_id();
