@@ -1,30 +1,30 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"forum/internal/pkg/domain"
 
 	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostRepository struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewPostRepository(db *sql.DB) *PostRepository {
+func NewPostRepository(db *pgxpool.Pool) *PostRepository {
 	return &PostRepository{
 		db: db,
 	}
 }
 
 func (repo *PostRepository) AddPosts(thread *domain.Thread, posts domain.PostBatch) error {
-	fmt.Println("___POST ADD BEGIN")
-	defer fmt.Println("___POST ADD END")
-
 	ids, err := repo.getAuthorIds(posts)
 	if err != nil {
 		return err
@@ -49,35 +49,28 @@ func (repo *PostRepository) AddPosts(thread *domain.Thread, posts domain.PostBat
 
 	query = query[:len(query)-1] + " RETURNING id"
 
-	rows, err := repo.db.Query(query, args...)
-	fmt.Println("________________ERROR AFTER POST ADD", err)
-
+	rows, err := repo.db.Query(context.Background(), query, args...)
 	if err != nil {
-		pgError, ok := err.(pgx.PgError)
+		return err
+	}
 
-		if !ok {
+	postIds, err := pgx.CollectRows[int64](rows, pgx.RowTo[int64])
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if !errors.As(err, &pgErr) {
 			return err
 		}
 
-		switch pgError.Code {
+		switch pgErr.Code {
 		case pgerrcode.ForeignKeyViolation:
 			return domain.ErrNoParent
 		case pgerrcode.IntegrityConstraintViolation:
 			return domain.ErrInvalidParent
 		}
-		return err
 	}
 
-	defer rows.Close()
-
-	i = 0
-	for rows.Next() {
-		err := rows.Scan(&posts[i].Id)
-		if err != nil {
-			fmt.Println("________________ERROR IN SCAN", err)
-			return err
-		}
-		i++
+	for i, id := range postIds {
+		posts[i].Id = id
 	}
 
 	return nil
@@ -93,9 +86,10 @@ func (repo *PostRepository) getAuthorIds(posts domain.PostBatch) (map[string]int
 		}
 
 		var id int
-		err := repo.db.QueryRow("SELECT id FROM users WHERE lower(nickname) = lower($1)", post.Author).Scan(&id)
+		err := repo.db.QueryRow(context.Background(),
+			"SELECT id FROM users WHERE lower(nickname) = lower($1)", post.Author).Scan(&id)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if err == pgx.ErrNoRows {
 				return nil, domain.ErrNotFound
 			}
 			return nil, err

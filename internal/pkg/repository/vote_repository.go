@@ -1,12 +1,12 @@
 package repository
 
-import "database/sql"
+import "github.com/jackc/pgx/v5/pgxpool"
 
 type VoteRepository struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewVoteRepository(db *sql.DB) *VoteRepository {
+func NewVoteRepository(db *pgxpool.Pool) *VoteRepository {
 	return &VoteRepository{
 		db: db,
 	}

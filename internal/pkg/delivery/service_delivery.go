@@ -1,11 +1,11 @@
 package delivery
 
 import (
-	"database/sql"
 	"net/http"
 
 	"forum/internal/pkg/repository"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,7 +13,7 @@ type ServiceHandler struct {
 	service *repository.ServiceRepository
 }
 
-func NewServiceHandler(db *sql.DB) *ServiceHandler {
+func NewServiceHandler(db *pgxpool.Pool) *ServiceHandler {
 	return &ServiceHandler{
 		service: repository.NewServiceRepository(db),
 	}

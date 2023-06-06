@@ -1,11 +1,12 @@
 package usecase
 
 import (
-	"database/sql"
 	"strconv"
 
 	"forum/internal/pkg/domain"
 	"forum/internal/pkg/repository"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ThreadUsecase struct {
@@ -14,7 +15,7 @@ type ThreadUsecase struct {
 	users   *repository.UserRepository
 }
 
-func NewThreadUsecase(db *sql.DB) *ThreadUsecase {
+func NewThreadUsecase(db *pgxpool.Pool) *ThreadUsecase {
 	return &ThreadUsecase{
 		forums:  repository.NewForumRepository(db),
 		threads: repository.NewThreadRepository(db),

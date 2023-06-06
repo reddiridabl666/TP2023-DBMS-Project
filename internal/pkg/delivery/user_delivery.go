@@ -1,12 +1,12 @@
 package delivery
 
 import (
-	"database/sql"
 	"net/http"
 
 	"forum/internal/pkg/domain"
 	"forum/internal/pkg/repository"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/mailru/easyjson"
 )
@@ -15,7 +15,7 @@ type UserHandler struct {
 	users *repository.UserRepository
 }
 
-func NewUserHandler(db *sql.DB) *UserHandler {
+func NewUserHandler(db *pgxpool.Pool) *UserHandler {
 	return &UserHandler{
 		users: repository.NewUserRepository(db),
 	}

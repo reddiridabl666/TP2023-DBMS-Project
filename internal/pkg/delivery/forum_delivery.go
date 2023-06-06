@@ -1,12 +1,12 @@
 package delivery
 
 import (
-	"database/sql"
 	"net/http"
 
 	"forum/internal/pkg/domain"
 	"forum/internal/pkg/usecase"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/mailru/easyjson"
 )
@@ -15,7 +15,7 @@ type ForumHandler struct {
 	forums *usecase.ForumUsecase
 }
 
-func NewForumHandler(db *sql.DB) *ForumHandler {
+func NewForumHandler(db *pgxpool.Pool) *ForumHandler {
 	return &ForumHandler{
 		forums: usecase.NewForumUsecase(db),
 	}

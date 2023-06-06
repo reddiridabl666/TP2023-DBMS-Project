@@ -1,13 +1,13 @@
 package delivery
 
 import (
-	"database/sql"
 	"net/http"
 
 	"forum/internal/pkg/domain"
 	"forum/internal/pkg/repository"
 	"forum/internal/pkg/usecase"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	easyjson "github.com/mailru/easyjson"
 )
@@ -17,7 +17,7 @@ type PostHandler struct {
 	threads *usecase.ThreadUsecase
 }
 
-func NewPostHandler(db *sql.DB, threads *usecase.ThreadUsecase) *PostHandler {
+func NewPostHandler(db *pgxpool.Pool, threads *usecase.ThreadUsecase) *PostHandler {
 	return &PostHandler{
 		posts:   repository.NewPostRepository(db),
 		threads: threads,

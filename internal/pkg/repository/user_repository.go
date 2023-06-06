@@ -1,19 +1,22 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
+	"errors"
 
 	"forum/internal/pkg/domain"
 
 	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
+func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
@@ -22,7 +25,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 func (repo *UserRepository) GetByNickname(nickname string) (*domain.User, error) {
 	res := &domain.User{}
 
-	err := repo.db.QueryRow(
+	err := repo.db.QueryRow(context.Background(),
 		`SELECT id, nickname, fullname, about, email
 			FROM users WHERE lower(nickname) = lower($1)`, nickname).
 		Scan(
@@ -32,14 +35,14 @@ func (repo *UserRepository) GetByNickname(nickname string) (*domain.User, error)
 			&res.About,
 			&res.Email,
 		)
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return nil, domain.ErrNotFound
 	}
 	return res, err
 }
 
 func (repo *UserRepository) Create(user *domain.User) (domain.UserBatch, error) {
-	_, err := repo.db.Exec(
+	_, err := repo.db.Exec(context.Background(),
 		`INSERT INTO users(nickname, fullname, about, email)
 				VALUES ($1, $2, $3, $4)`,
 		user.Nickname, user.Fullname, user.About, user.Email)
@@ -48,14 +51,14 @@ func (repo *UserRepository) Create(user *domain.User) (domain.UserBatch, error) 
 		return nil, nil
 	}
 
-	pgError, ok := err.(pgx.PgError)
-	if !ok || pgError.Code != pgerrcode.UniqueViolation {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) || pgErr.Code != pgerrcode.UniqueViolation {
 		return nil, err
 	}
 
 	resp := []*domain.User{}
 
-	rows, err := repo.db.Query(
+	rows, err := repo.db.Query(context.Background(),
 		`SELECT id, nickname, fullname, about, email
 		 FROM users WHERE lower(email) = lower($1) OR lower(nickname) = lower($2)`,
 		user.Email, user.Nickname)
@@ -98,11 +101,12 @@ func (repo *UserRepository) Update(user *domain.User) error {
 		user.About = previous.About
 	}
 
-	_, err = repo.db.Exec(
+	_, err = repo.db.Exec(context.Background(),
 		`UPDATE users SET fullname = $1, about = $2, email = $3 WHERE lower(nickname) = lower($4)`,
 		user.Fullname, user.About, user.Email, user.Nickname)
 	if err != nil {
-		if pgError, ok := err.(pgx.PgError); ok && pgError.Code == pgerrcode.UniqueViolation {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 			return domain.ErrAlreadyExists
 		}
 		return err

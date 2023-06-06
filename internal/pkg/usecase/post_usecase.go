@@ -1,9 +1,9 @@
 package usecase
 
 import (
-	"database/sql"
-
 	"forum/internal/pkg/repository"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostUsecase struct {
@@ -11,7 +11,7 @@ type PostUsecase struct {
 	threads *repository.ThreadRepository
 }
 
-func NewPostUsecase(db *sql.DB) *PostUsecase {
+func NewPostUsecase(db *pgxpool.Pool) *PostUsecase {
 	return &PostUsecase{
 		posts:   repository.NewPostRepository(db),
 		threads: repository.NewThreadRepository(db),

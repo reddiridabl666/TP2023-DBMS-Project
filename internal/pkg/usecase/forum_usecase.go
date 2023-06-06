@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"database/sql"
-
 	"forum/internal/pkg/domain"
 	"forum/internal/pkg/repository"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ForumUsecase struct {
@@ -12,7 +12,7 @@ type ForumUsecase struct {
 	users  *repository.UserRepository
 }
 
-func NewForumUsecase(db *sql.DB) *ForumUsecase {
+func NewForumUsecase(db *pgxpool.Pool) *ForumUsecase {
 	return &ForumUsecase{
 		forums: repository.NewForumRepository(db),
 		users:  repository.NewUserRepository(db),
