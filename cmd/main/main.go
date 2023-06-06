@@ -35,8 +35,9 @@ func main() {
 	api.GET("/forum/:slug/details", forums.Get)
 
 	api.POST("/forum/:slug/create", threads.Create)
-	api.GET("/thread/:slug/details", threads.Get)
-	api.POST("/thread/:slug/details", threads.Update)
+	api.GET("/forum/:slug/threads", threads.GetByForum)
+	api.GET("/thread/:slug_or_id/details", threads.Get)
+	api.POST("/thread/:slug_or_id/details", threads.Update)
 
 	api.GET("/service/status", service.Status)
 	api.POST("/service/clear", service.Clear)

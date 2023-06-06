@@ -40,8 +40,44 @@ func (u *ThreadUsecase) Create(thread *domain.Thread) error {
 
 func (u *ThreadUsecase) Get(slugOrId string) (*domain.Thread, error) {
 	id, err := strconv.Atoi(slugOrId)
-	if err != nil {
+	if err == nil {
 		return u.threads.GetById(id)
 	}
 	return u.threads.GetBySlug(slugOrId)
+}
+
+func (u *ThreadUsecase) Update(slugOrId string, thread *domain.Thread) error {
+	previous, err := u.Get(slugOrId)
+	if err != nil {
+		return err
+	}
+
+	if thread.Title == "" {
+		thread.Title = previous.Title
+	}
+
+	if thread.Message == "" {
+		thread.Message = previous.Message
+	}
+
+	thread.Author = previous.Author
+	thread.Forum = previous.Forum
+	thread.Created = previous.Created
+	thread.Id = previous.Id
+	thread.Slug = previous.Slug
+
+	return u.threads.Update(thread)
+}
+
+func (u *ThreadUsecase) GetByForum(params *domain.ThreadListParams) (domain.ThreadBatch, error) {
+	forum, err := u.forums.Get(params.Forum)
+	if err != nil {
+		return nil, err
+	}
+	params.ForumId = forum.Id
+
+	if params.Limit < 1 {
+		params.Limit = 100
+	}
+	return u.threads.GetByForum(params)
 }

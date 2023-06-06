@@ -51,6 +51,8 @@ create unique index on forum (lower(slug));
 
 create unique index on thread (lower(slug));
 
+create index on thread (forum_id);
+
 create or replace function update_vote_count() returns trigger as $$
     begin
         if (tg_op = 'INSERT') then

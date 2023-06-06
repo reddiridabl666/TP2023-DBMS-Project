@@ -66,13 +66,16 @@ func (repo *UserRepository) Create(user *domain.User) (domain.UserBatch, error) 
 
 	for rows.Next() {
 		user := &domain.User{}
-		rows.Scan(
+		err = rows.Scan(
 			&user.Id,
 			&user.Nickname,
 			&user.Fullname,
 			&user.About,
 			&user.Email,
 		)
+		if err != nil {
+			return nil, err
+		}
 		resp = append(resp, user)
 	}
 
@@ -106,5 +109,3 @@ func (repo *UserRepository) Update(user *domain.User) error {
 	}
 	return nil
 }
-
-// curl -v -X POST --data '{"about": "Quodam abs en cui. Bene talia ipsum. Subdita. Libenter inludi veni tolerantiam pacto.","email": "alioquin.3ZIhFjfMlviW7@precescit.com","fullname": "Joshua Brown"}' http://localhost:5000/api/user/retarder.lHFMfjC63d5q7u/create

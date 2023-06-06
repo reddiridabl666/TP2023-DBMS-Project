@@ -159,7 +159,71 @@ func (v User) MarshalEasyJSON(w *jwriter.Writer) {
 func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson3e1fa5ecDecodeForumInternalPkgDomain1(l, v)
 }
-func easyjson3e1fa5ecDecodeForumInternalPkgDomain2(in *jlexer.Lexer, out *Thread) {
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain2(in *jlexer.Lexer, out *ThreadBatch) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		in.Skip()
+		*out = nil
+	} else {
+		in.Delim('[')
+		if *out == nil {
+			if !in.IsDelim(']') {
+				*out = make(ThreadBatch, 0, 8)
+			} else {
+				*out = ThreadBatch{}
+			}
+		} else {
+			*out = (*out)[:0]
+		}
+		for !in.IsDelim(']') {
+			var v4 *Thread
+			if in.IsNull() {
+				in.Skip()
+				v4 = nil
+			} else {
+				if v4 == nil {
+					v4 = new(Thread)
+				}
+				(*v4).UnmarshalEasyJSON(in)
+			}
+			*out = append(*out, v4)
+			in.WantComma()
+		}
+		in.Delim(']')
+	}
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain2(out *jwriter.Writer, in ThreadBatch) {
+	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		out.RawString("null")
+	} else {
+		out.RawByte('[')
+		for v5, v6 := range in {
+			if v5 > 0 {
+				out.RawByte(',')
+			}
+			if v6 == nil {
+				out.RawString("null")
+			} else {
+				(*v6).MarshalEasyJSON(out)
+			}
+		}
+		out.RawByte(']')
+	}
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ThreadBatch) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain2(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ThreadBatch) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain2(l, v)
+}
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain3(in *jlexer.Lexer, out *Thread) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -204,7 +268,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain2(in *jlexer.Lexer, out *Thread
 		in.Consumed()
 	}
 }
-func easyjson3e1fa5ecEncodeForumInternalPkgDomain2(out *jwriter.Writer, in Thread) {
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain3(out *jwriter.Writer, in Thread) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -253,14 +317,14 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain2(out *jwriter.Writer, in Threa
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Thread) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3e1fa5ecEncodeForumInternalPkgDomain2(w, v)
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain3(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Thread) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3e1fa5ecDecodeForumInternalPkgDomain2(l, v)
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain3(l, v)
 }
-func easyjson3e1fa5ecDecodeForumInternalPkgDomain3(in *jlexer.Lexer, out *ServiceInfo) {
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain4(in *jlexer.Lexer, out *ServiceInfo) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -297,7 +361,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain3(in *jlexer.Lexer, out *Servic
 		in.Consumed()
 	}
 }
-func easyjson3e1fa5ecEncodeForumInternalPkgDomain3(out *jwriter.Writer, in ServiceInfo) {
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain4(out *jwriter.Writer, in ServiceInfo) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -326,14 +390,14 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain3(out *jwriter.Writer, in Servi
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ServiceInfo) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3e1fa5ecEncodeForumInternalPkgDomain3(w, v)
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain4(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ServiceInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3e1fa5ecDecodeForumInternalPkgDomain3(l, v)
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain4(l, v)
 }
-func easyjson3e1fa5ecDecodeForumInternalPkgDomain4(in *jlexer.Lexer, out *Post) {
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain5(in *jlexer.Lexer, out *Post) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -380,7 +444,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain4(in *jlexer.Lexer, out *Post) 
 		in.Consumed()
 	}
 }
-func easyjson3e1fa5ecEncodeForumInternalPkgDomain4(out *jwriter.Writer, in Post) {
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in Post) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -429,14 +493,14 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain4(out *jwriter.Writer, in Post)
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Post) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3e1fa5ecEncodeForumInternalPkgDomain4(w, v)
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain5(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Post) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3e1fa5ecDecodeForumInternalPkgDomain4(l, v)
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain5(l, v)
 }
-func easyjson3e1fa5ecDecodeForumInternalPkgDomain5(in *jlexer.Lexer, out *Forum) {
+func easyjson3e1fa5ecDecodeForumInternalPkgDomain6(in *jlexer.Lexer, out *Forum) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -477,7 +541,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain5(in *jlexer.Lexer, out *Forum)
 		in.Consumed()
 	}
 }
-func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in Forum) {
+func easyjson3e1fa5ecEncodeForumInternalPkgDomain6(out *jwriter.Writer, in Forum) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -516,10 +580,10 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain5(out *jwriter.Writer, in Forum
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Forum) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3e1fa5ecEncodeForumInternalPkgDomain5(w, v)
+	easyjson3e1fa5ecEncodeForumInternalPkgDomain6(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Forum) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3e1fa5ecDecodeForumInternalPkgDomain5(l, v)
+	easyjson3e1fa5ecDecodeForumInternalPkgDomain6(l, v)
 }

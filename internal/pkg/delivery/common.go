@@ -7,5 +7,6 @@ const (
 	MsgForumNotFound  = "no such forum"
 	MsgThreadNotFound = "no such thread"
 	MsgForumExists    = "such forum already exists"
+	MsgNoUserOrForum  = "no such forum or user"
 	MsgInternalError  = "internal error"
 )
