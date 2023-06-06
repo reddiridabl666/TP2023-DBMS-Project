@@ -5,19 +5,19 @@ import (
 	"net/http"
 
 	"forum/internal/pkg/domain"
-	"forum/internal/pkg/repository"
+	"forum/internal/pkg/usecase"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mailru/easyjson"
 )
 
 type ForumHandler struct {
-	forums *repository.ForumRepository
+	forums *usecase.ForumUsecase
 }
 
 func NewForumHandler(db *sql.DB) *ForumHandler {
 	return &ForumHandler{
-		forums: repository.NewForumRepository(db),
+		forums: usecase.NewForumUsecase(db),
 	}
 }
 

@@ -29,7 +29,7 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, MsgBadJSON)
 	}
 
-	alreadyExisting, err := h.users.CreateUser(user)
+	alreadyExisting, err := h.users.Create(user)
 	switch err {
 	case nil:
 		return c.JSON(http.StatusCreated, user)
@@ -44,7 +44,7 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 func (h *UserHandler) GetUser(c echo.Context) error {
 	nickname := c.Param("nickname")
 
-	user, err := h.users.GetUser(nickname)
+	user, err := h.users.GetByNickname(nickname)
 
 	switch err {
 	case nil:
@@ -65,7 +65,7 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, MsgBadJSON)
 	}
 
-	err = h.users.UpdateUser(user)
+	err = h.users.Update(user)
 
 	switch err {
 	case nil:

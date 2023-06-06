@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"time"
-
+	"forum/internal/pkg/utils"
 	"forum/internal/pkg/utils/nullable"
 )
 
@@ -13,7 +12,7 @@ type Thread struct {
 	Author  string
 	Forum   string
 	Message string
-	Votes   int32
-	Slug    nullable.String
-	Created time.Time
+	Votes   int32           `json:"votes,omitempty"`
+	Slug    nullable.String `json:"slug,omitempty"`
+	Created utils.Time
 }

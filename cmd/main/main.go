@@ -24,6 +24,8 @@ func main() {
 	users := delivery.NewUserHandler(db)
 	service := delivery.NewServiceHandler(db)
 	forums := delivery.NewForumHandler(db)
+	threads := delivery.NewThreadHandler(db)
+	// posts := delivery.NewPostHandler(db)
 
 	api.GET("/user/:nickname/profile", users.GetUser)
 	api.POST("/user/:nickname/create", users.CreateUser)
@@ -31,6 +33,10 @@ func main() {
 
 	api.POST("/forum/create", forums.Create)
 	api.GET("/forum/:slug/details", forums.Get)
+
+	api.POST("/forum/:slug/create", threads.Create)
+	api.GET("/thread/:slug/details", threads.Get)
+	api.POST("/thread/:slug/details", threads.Update)
 
 	api.GET("/service/status", service.Status)
 	api.POST("/service/clear", service.Clear)

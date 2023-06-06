@@ -19,26 +19,8 @@ func NewForumRepository(db *sql.DB) *ForumRepository {
 	}
 }
 
-func (repo *ForumRepository) Create(forum *domain.Forum) error {
-	var userId int
-
-	err := repo.db.QueryRow(
-		`SELECT id, nickname FROM users
-		 	WHERE lower(nickname) = lower($1)`,
-		forum.User,
-	).Scan(
-		&userId,
-		&forum.User,
-	)
-
-	if err == sql.ErrNoRows {
-		return domain.ErrNotFound
-	}
-	if err != nil {
-		return nil
-	}
-
-	_, err = repo.db.Exec(
+func (repo *ForumRepository) Create(userId int, forum *domain.Forum) error {
+	_, err := repo.db.Exec(
 		`INSERT INTO forum(title, slug, author_id)
 		 	VALUES($1, $2, $3)`,
 		forum.Title, forum.Slug, userId,
@@ -49,32 +31,27 @@ func (repo *ForumRepository) Create(forum *domain.Forum) error {
 	}
 
 	pgError, ok := err.(pgx.PgError)
-	if !ok {
+	if !ok || pgError.Code != pgerrcode.UniqueViolation {
 		return err
 	}
 
-	switch pgError.Code {
-	case pgerrcode.UniqueViolation:
-		err := repo.db.QueryRow(`
+	err = repo.db.QueryRow(`
 			SELECT f.id, u.nickname, f.title,
 				   f.slug, f.post_num, f.thread_num
 			FROM forum f JOIN users u ON f.author_id = u.id
 			WHERE lower(f.slug) = lower($1)`, forum.Slug).
-			Scan(
-				&forum.Id,
-				&forum.User,
-				&forum.Title,
-				&forum.Slug,
-				&forum.Posts,
-				&forum.Threads,
-			)
-		if err != nil {
-			return err
-		}
-		return domain.ErrAlreadyExists
-	default:
+		Scan(
+			&forum.Id,
+			&forum.User,
+			&forum.Title,
+			&forum.Slug,
+			&forum.Posts,
+			&forum.Threads,
+		)
+	if err != nil {
 		return err
 	}
+	return domain.ErrAlreadyExists
 }
 
 func (repo *ForumRepository) Get(slug string) (*domain.Forum, error) {

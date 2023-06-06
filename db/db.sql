@@ -20,9 +20,10 @@ create table if not exists Thread(
     forum_id integer references Forum not null,
     author_id integer references Users not null,
     title varchar not null,
+    slug varchar,
     message varchar not null,
     rating integer default 0,
-    created_at timestamp default now()
+    created_at timestamp with time zone default now()
 );
 
 create table if not exists Post(
@@ -32,7 +33,7 @@ create table if not exists Post(
     parent_id integer references Post,
     message varchar not null,
     is_edited boolean default false,
-    created_at timestamp default now()
+    created_at timestamp with time zone default now()
 );
 
 create table if not exists Vote(
@@ -47,6 +48,8 @@ create unique index on users (lower(nickname));
 create unique index on users (lower(email));
 
 create unique index on forum (lower(slug));
+
+create unique index on thread (lower(slug));
 
 create or replace function update_vote_count() returns trigger as $$
     begin

@@ -19,7 +19,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (repo *UserRepository) GetUser(nickname string) (*domain.User, error) {
+func (repo *UserRepository) GetByNickname(nickname string) (*domain.User, error) {
 	res := &domain.User{}
 
 	err := repo.db.QueryRow(
@@ -38,7 +38,7 @@ func (repo *UserRepository) GetUser(nickname string) (*domain.User, error) {
 	return res, err
 }
 
-func (repo *UserRepository) CreateUser(user *domain.User) (domain.UserBatch, error) {
+func (repo *UserRepository) Create(user *domain.User) (domain.UserBatch, error) {
 	_, err := repo.db.Exec(
 		`INSERT INTO users(nickname, fullname, about, email)
 				VALUES ($1, $2, $3, $4)`,
@@ -79,8 +79,8 @@ func (repo *UserRepository) CreateUser(user *domain.User) (domain.UserBatch, err
 	return resp, domain.ErrAlreadyExists
 }
 
-func (repo *UserRepository) UpdateUser(user *domain.User) error {
-	previous, err := repo.GetUser(user.Nickname)
+func (repo *UserRepository) Update(user *domain.User) error {
+	previous, err := repo.GetByNickname(user.Nickname)
 	if err != nil {
 		return err
 	}

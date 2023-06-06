@@ -193,9 +193,7 @@ func easyjson3e1fa5ecDecodeForumInternalPkgDomain2(in *jlexer.Lexer, out *Thread
 		case "slug":
 			(out.Slug).UnmarshalEasyJSON(in)
 		case "created":
-			if data := in.Raw(); in.Ok() {
-				in.AddError((out.Created).UnmarshalJSON(data))
-			}
+			(out.Created).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -235,12 +233,12 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain2(out *jwriter.Writer, in Threa
 		out.RawString(prefix)
 		out.String(string(in.Message))
 	}
-	{
+	if in.Votes != 0 {
 		const prefix string = ",\"votes\":"
 		out.RawString(prefix)
 		out.Int32(int32(in.Votes))
 	}
-	{
+	if (in.Slug).IsDefined() {
 		const prefix string = ",\"slug\":"
 		out.RawString(prefix)
 		(in.Slug).MarshalEasyJSON(out)
@@ -248,7 +246,7 @@ func easyjson3e1fa5ecEncodeForumInternalPkgDomain2(out *jwriter.Writer, in Threa
 	{
 		const prefix string = ",\"created\":"
 		out.RawString(prefix)
-		out.Raw((in.Created).MarshalJSON())
+		(in.Created).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
