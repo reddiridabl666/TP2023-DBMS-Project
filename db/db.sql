@@ -56,13 +56,13 @@ create index on thread (forum_id);
 create or replace function update_vote_count() returns trigger as $$
     begin
         if (tg_op = 'INSERT') then
-            update Thread set votes = votes + NEW.value where id = NEW.thread_id;
+            update Thread set rating = rating + NEW.value where id = NEW.thread_id;
             return NEW;
-        elsif (tg_op = "UPDATE") then
-            update Thread set votes = votes - OLD.value + NEW.value where id = NEW.thread_id;
+        elsif (tg_op = 'UPDATE') then
+            update Thread set rating = rating - OLD.value + NEW.value where id = NEW.thread_id;
             return NEW;
-        elsif (tg_op = "DELETE") then
-            update Thread set votes = votes - OLD.value where id = OLD.thread_id;
+        elsif (tg_op = 'DELETE') then
+            update Thread set rating = rating - OLD.value where id = OLD.thread_id;
             return OLD;
         end if;
         return NULL;
@@ -74,7 +74,7 @@ create or replace function update_post_count() returns trigger as $$
         if (tg_op = 'INSERT') then
             update Forum set post_num = post_num + 1 where id = (select forum_id from Thread where id = NEW.thread_id);
             return NEW;
-        elsif (tg_op = "DELETE") then
+        elsif (tg_op = 'DELETE') then
             update Forum set post_num = post_num - 1 where id = (select forum_id from Thread where id = OLD.thread_id);
             return OLD;
         end if;
@@ -87,7 +87,7 @@ create or replace function update_thread_count() returns trigger as $$
         if (tg_op = 'INSERT') then
             update Forum set thread_num = thread_num + 1 where id = NEW.forum_id;
             return NEW;
-        elsif (tg_op = "DELETE") then
+        elsif (tg_op = 'DELETE') then
             update Forum set thread_num = thread_num - 1 where id = OLD.forum_id;
             return OLD;
         end if;

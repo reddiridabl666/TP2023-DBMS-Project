@@ -18,7 +18,66 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonCea158a8DecodeForumInternalPkgDelivery(in *jlexer.Lexer, out *PostResponse) {
+func easyjsonCea158a8DecodeForumInternalPkgDelivery(in *jlexer.Lexer, out *VoteRequest) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "nickname":
+			out.Nickname = string(in.String())
+		case "voice":
+			out.Voice = int(in.Int())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonCea158a8EncodeForumInternalPkgDelivery(out *jwriter.Writer, in VoteRequest) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"nickname\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.Nickname))
+	}
+	{
+		const prefix string = ",\"voice\":"
+		out.RawString(prefix)
+		out.Int(int(in.Voice))
+	}
+	out.RawByte('}')
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v VoteRequest) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonCea158a8EncodeForumInternalPkgDelivery(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *VoteRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonCea158a8DecodeForumInternalPkgDelivery(l, v)
+}
+func easyjsonCea158a8DecodeForumInternalPkgDelivery1(in *jlexer.Lexer, out *PostResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -87,7 +146,7 @@ func easyjsonCea158a8DecodeForumInternalPkgDelivery(in *jlexer.Lexer, out *PostR
 		in.Consumed()
 	}
 }
-func easyjsonCea158a8EncodeForumInternalPkgDelivery(out *jwriter.Writer, in PostResponse) {
+func easyjsonCea158a8EncodeForumInternalPkgDelivery1(out *jwriter.Writer, in PostResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -120,14 +179,14 @@ func easyjsonCea158a8EncodeForumInternalPkgDelivery(out *jwriter.Writer, in Post
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PostResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonCea158a8EncodeForumInternalPkgDelivery(w, v)
+	easyjsonCea158a8EncodeForumInternalPkgDelivery1(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PostResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonCea158a8DecodeForumInternalPkgDelivery(l, v)
+	easyjsonCea158a8DecodeForumInternalPkgDelivery1(l, v)
 }
-func easyjsonCea158a8DecodeForumInternalPkgDelivery1(in *jlexer.Lexer, out *PostMessage) {
+func easyjsonCea158a8DecodeForumInternalPkgDelivery2(in *jlexer.Lexer, out *PostMessage) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -158,7 +217,7 @@ func easyjsonCea158a8DecodeForumInternalPkgDelivery1(in *jlexer.Lexer, out *Post
 		in.Consumed()
 	}
 }
-func easyjsonCea158a8EncodeForumInternalPkgDelivery1(out *jwriter.Writer, in PostMessage) {
+func easyjsonCea158a8EncodeForumInternalPkgDelivery2(out *jwriter.Writer, in PostMessage) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -172,10 +231,10 @@ func easyjsonCea158a8EncodeForumInternalPkgDelivery1(out *jwriter.Writer, in Pos
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PostMessage) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjsonCea158a8EncodeForumInternalPkgDelivery1(w, v)
+	easyjsonCea158a8EncodeForumInternalPkgDelivery2(w, v)
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PostMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonCea158a8DecodeForumInternalPkgDelivery1(l, v)
+	easyjsonCea158a8DecodeForumInternalPkgDelivery2(l, v)
 }
