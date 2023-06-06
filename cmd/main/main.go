@@ -23,10 +23,14 @@ func main() {
 
 	users := delivery.NewUserHandler(db)
 	service := delivery.NewServiceHandler(db)
+	forums := delivery.NewForumHandler(db)
 
 	api.GET("/user/:nickname/profile", users.GetUser)
 	api.POST("/user/:nickname/create", users.CreateUser)
 	api.POST("/user/:nickname/profile", users.UpdateUser)
+
+	api.POST("/forum/create", forums.Create)
+	api.GET("/forum/:slug/details", forums.Get)
 
 	api.GET("/service/status", service.Status)
 	api.POST("/service/clear", service.Clear)

@@ -33,11 +33,11 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	switch err {
 	case nil:
 		return c.JSON(http.StatusCreated, user)
-	case domain.ErrUniqueViolation:
+	case domain.ErrAlreadyExists:
 		return c.JSON(http.StatusConflict, alreadyExisting)
 	default:
 		c.Logger().Error(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, MsgInternalError)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 }
 
@@ -53,7 +53,7 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, MsgUserNotFound)
 	default:
 		c.Logger().Error(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, MsgInternalError)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 }
 
@@ -72,10 +72,10 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 		return c.JSON(http.StatusOK, user)
 	case domain.ErrNotFound:
 		return echo.NewHTTPError(http.StatusNotFound, MsgUserNotFound)
-	case domain.ErrUniqueViolation:
+	case domain.ErrAlreadyExists:
 		return echo.NewHTTPError(http.StatusConflict, MsgUserExists)
 	default:
 		c.Logger().Error(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, MsgInternalError)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 }

@@ -76,7 +76,7 @@ func (repo *UserRepository) CreateUser(user *domain.User) (domain.UserBatch, err
 		resp = append(resp, user)
 	}
 
-	return resp, domain.ErrUniqueViolation
+	return resp, domain.ErrAlreadyExists
 }
 
 func (repo *UserRepository) UpdateUser(user *domain.User) error {
@@ -100,7 +100,7 @@ func (repo *UserRepository) UpdateUser(user *domain.User) error {
 		user.Fullname, user.About, user.Email, user.Nickname)
 	if err != nil {
 		if pgError, ok := err.(pgx.PgError); ok && pgError.Code == pgerrcode.UniqueViolation {
-			return domain.ErrUniqueViolation
+			return domain.ErrAlreadyExists
 		}
 		return err
 	}

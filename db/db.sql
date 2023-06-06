@@ -10,7 +10,7 @@ create table if not exists Forum(
     id serial primary key,
     author_id integer references Users not null,
     title varchar unique not null,
-    slug varchar unique not null,
+    slug varchar not null,
     post_num integer default 0 check (post_num >= 0),
     thread_num integer default 0 check (thread_num >= 0)
 );
@@ -45,6 +45,8 @@ create table if not exists Vote(
 create unique index on users (lower(nickname));
 
 create unique index on users (lower(email));
+
+create unique index on forum (lower(slug));
 
 create or replace function update_vote_count() returns trigger as $$
     begin

@@ -22,7 +22,7 @@ func NewServiceHandler(db *sql.DB) *ServiceHandler {
 func (h *ServiceHandler) Clear(c echo.Context) error {
 	err := h.service.Clear()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, MsgInternalError)
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.NoContent(http.StatusOK)
 }
@@ -30,7 +30,7 @@ func (h *ServiceHandler) Clear(c echo.Context) error {
 func (h *ServiceHandler) Status(c echo.Context) error {
 	info, err := h.service.Status()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, MsgInternalError)
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, info)
 }

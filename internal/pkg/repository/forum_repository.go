@@ -20,10 +20,28 @@ func NewForumRepository(db *sql.DB) *ForumRepository {
 }
 
 func (repo *ForumRepository) Create(forum *domain.Forum) error {
-	_, err := repo.db.Exec(
+	var userId int
+
+	err := repo.db.QueryRow(
+		`SELECT id, nickname FROM users
+		 	WHERE lower(nickname) = lower($1)`,
+		forum.User,
+	).Scan(
+		&userId,
+		&forum.User,
+	)
+
+	if err == sql.ErrNoRows {
+		return domain.ErrNotFound
+	}
+	if err != nil {
+		return nil
+	}
+
+	_, err = repo.db.Exec(
 		`INSERT INTO forum(title, slug, author_id)
-		 VALUES($1, $2, (SELECT id FROM users WHERE lower(nickname) = lower($3)))`,
-		forum.Title, forum.Slug, forum.User,
+		 	VALUES($1, $2, $3)`,
+		forum.Title, forum.Slug, userId,
 	)
 
 	if err == nil {
@@ -41,7 +59,7 @@ func (repo *ForumRepository) Create(forum *domain.Forum) error {
 			SELECT f.id, u.nickname, f.title,
 				   f.slug, f.post_num, f.thread_num
 			FROM forum f JOIN users u ON f.author_id = u.id
-			WHERE f.slug = $1`, forum.Slug).
+			WHERE lower(f.slug) = lower($1)`, forum.Slug).
 			Scan(
 				&forum.Id,
 				&forum.User,
@@ -53,9 +71,7 @@ func (repo *ForumRepository) Create(forum *domain.Forum) error {
 		if err != nil {
 			return err
 		}
-		return domain.ErrUniqueViolation
-	case pgerrcode.ForeignKeyViolation:
-		return domain.ErrNotFound
+		return domain.ErrAlreadyExists
 	default:
 		return err
 	}
@@ -68,7 +84,7 @@ func (repo *ForumRepository) Get(slug string) (*domain.Forum, error) {
 		`SELECT f.id, u.nickname, f.title,
 			f.slug, f.post_num, f.thread_num
 		 FROM forum f JOIN users u ON f.author_id = u.id
-		 WHERE f.slug = $1`, slug).
+		 WHERE lower(f.slug) = lower($1)`, slug).
 		Scan(
 			&forum.Id,
 			&forum.User,
