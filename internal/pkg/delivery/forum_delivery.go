@@ -6,7 +6,6 @@ import (
 	"forum/internal/pkg/domain"
 	"forum/internal/pkg/usecase"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/mailru/easyjson"
 )
@@ -15,9 +14,9 @@ type ForumHandler struct {
 	forums *usecase.ForumUsecase
 }
 
-func NewForumHandler(db *pgxpool.Pool) *ForumHandler {
+func NewForumHandler(forums *usecase.ForumUsecase) *ForumHandler {
 	return &ForumHandler{
-		forums: usecase.NewForumUsecase(db),
+		forums: forums,
 	}
 }
 

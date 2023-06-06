@@ -4,6 +4,7 @@ package delivery
 
 import (
 	json "encoding/json"
+	domain "forum/internal/pkg/domain"
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
@@ -16,3 +17,165 @@ var (
 	_ *jwriter.Writer
 	_ easyjson.Marshaler
 )
+
+func easyjsonCea158a8DecodeForumInternalPkgDelivery(in *jlexer.Lexer, out *PostResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "post":
+			if in.IsNull() {
+				in.Skip()
+				out.Post = nil
+			} else {
+				if out.Post == nil {
+					out.Post = new(domain.Post)
+				}
+				(*out.Post).UnmarshalEasyJSON(in)
+			}
+		case "author":
+			if in.IsNull() {
+				in.Skip()
+				out.Author = nil
+			} else {
+				if out.Author == nil {
+					out.Author = new(domain.User)
+				}
+				(*out.Author).UnmarshalEasyJSON(in)
+			}
+		case "thread":
+			if in.IsNull() {
+				in.Skip()
+				out.Thread = nil
+			} else {
+				if out.Thread == nil {
+					out.Thread = new(domain.Thread)
+				}
+				(*out.Thread).UnmarshalEasyJSON(in)
+			}
+		case "forum":
+			if in.IsNull() {
+				in.Skip()
+				out.Forum = nil
+			} else {
+				if out.Forum == nil {
+					out.Forum = new(domain.Forum)
+				}
+				(*out.Forum).UnmarshalEasyJSON(in)
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonCea158a8EncodeForumInternalPkgDelivery(out *jwriter.Writer, in PostResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"post\":"
+		out.RawString(prefix[1:])
+		if in.Post == nil {
+			out.RawString("null")
+		} else {
+			(*in.Post).MarshalEasyJSON(out)
+		}
+	}
+	if in.Author != nil {
+		const prefix string = ",\"author\":"
+		out.RawString(prefix)
+		(*in.Author).MarshalEasyJSON(out)
+	}
+	if in.Thread != nil {
+		const prefix string = ",\"thread\":"
+		out.RawString(prefix)
+		(*in.Thread).MarshalEasyJSON(out)
+	}
+	if in.Forum != nil {
+		const prefix string = ",\"forum\":"
+		out.RawString(prefix)
+		(*in.Forum).MarshalEasyJSON(out)
+	}
+	out.RawByte('}')
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v PostResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonCea158a8EncodeForumInternalPkgDelivery(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *PostResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonCea158a8DecodeForumInternalPkgDelivery(l, v)
+}
+func easyjsonCea158a8DecodeForumInternalPkgDelivery1(in *jlexer.Lexer, out *PostMessage) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "message":
+			out.Message = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonCea158a8EncodeForumInternalPkgDelivery1(out *jwriter.Writer, in PostMessage) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"message\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.Message))
+	}
+	out.RawByte('}')
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v PostMessage) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonCea158a8EncodeForumInternalPkgDelivery1(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *PostMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonCea158a8DecodeForumInternalPkgDelivery1(l, v)
+}

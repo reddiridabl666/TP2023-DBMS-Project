@@ -47,6 +47,10 @@ func (u *ThreadUsecase) Get(slugOrId string) (*domain.Thread, error) {
 	return u.threads.GetBySlug(slugOrId)
 }
 
+func (u *ThreadUsecase) GetById(id int) (*domain.Thread, error) {
+	return u.threads.GetById(id)
+}
+
 func (u *ThreadUsecase) Update(slugOrId string, thread *domain.Thread) error {
 	previous, err := u.Get(slugOrId)
 	if err != nil {

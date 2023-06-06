@@ -23,12 +23,13 @@ func main() {
 	api.Use(middleware.Recover(), middleware.Logger())
 
 	threadsUsecase := usecase.NewThreadUsecase(db)
+	forumsUsecase := usecase.NewForumUsecase(db)
 
 	users := delivery.NewUserHandler(db)
 	service := delivery.NewServiceHandler(db)
-	forums := delivery.NewForumHandler(db)
+	forums := delivery.NewForumHandler(forumsUsecase)
 	threads := delivery.NewThreadHandler(threadsUsecase)
-	posts := delivery.NewPostHandler(db, threadsUsecase)
+	posts := delivery.NewPostHandler(db, threadsUsecase, forumsUsecase)
 
 	api.GET("/user/:nickname/profile", users.GetUser)
 	api.POST("/user/:nickname/create", users.CreateUser)
@@ -43,6 +44,8 @@ func main() {
 	api.POST("/thread/:slug_or_id/details", threads.Update)
 
 	api.POST("/thread/:slug_or_id/create", posts.AddPosts)
+	api.GET("/post/:id/details", posts.GetPost)
+	api.POST("/post/:id/details", posts.UpdatePost)
 
 	api.GET("/service/status", service.Status)
 	api.POST("/service/clear", service.Clear)

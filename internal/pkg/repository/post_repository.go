@@ -100,3 +100,62 @@ func (repo *PostRepository) getAuthorIds(posts domain.PostBatch) (map[string]int
 
 	return res, nil
 }
+
+func (repo *PostRepository) GetPost(id int64) (*domain.Post, error) {
+	post := &domain.Post{Id: id}
+
+	err := repo.db.QueryRow(context.Background(),
+		`SELECT u.nickname, p.message, p.is_edited,
+				f.slug, p.thread_id, p.created_at
+		 FROM post p JOIN users u ON u.id = p.author_id
+		 			 JOIN thread t ON t.id = p.thread_id
+					 JOIN forum f ON f.id = t.forum_id
+		 WHERE p.id = $1`, id).
+		Scan(
+			&post.Author,
+			&post.Message,
+			&post.IsEdited,
+			&post.Forum,
+			&post.Thread,
+			&post.Created,
+		)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return post, nil
+}
+
+func (repo *PostRepository) Update(post *domain.Post) error {
+	previous, err := repo.GetPost(post.Id)
+	if err != nil {
+		return err
+	}
+
+	if post.Message == "" {
+		post.Message = previous.Message
+	}
+
+	if post.Message != previous.Message {
+		post.IsEdited = true
+	}
+
+	_, err = repo.db.Exec(context.Background(),
+		`UPDATE post SET message = $1, is_edited = $2 WHERE id = $3`,
+		post.Message, post.IsEdited, post.Id)
+
+	if err != nil {
+		return err
+	}
+
+	post.Author = previous.Author
+	post.Forum = previous.Forum
+	post.Created = previous.Created
+	post.Parent = previous.Parent
+	post.Thread = previous.Thread
+
+	return nil
+}
