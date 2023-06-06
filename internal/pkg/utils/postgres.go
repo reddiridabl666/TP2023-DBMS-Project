@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	_ "github.com/jackc/pgx"
+	_ "github.com/jackc/pgx/stdlib"
 )
 
 func Tx(db *sql.DB, fb func(tx *sql.Tx) error) error {

@@ -22,10 +22,11 @@ func NewUserHandler(db *sql.DB) *UserHandler {
 }
 
 func (h *UserHandler) CreateUser(c echo.Context) error {
-	user := &domain.User{}
+	user := &domain.User{Nickname: c.Param("nickname")}
+
 	err := easyjson.UnmarshalFromReader(c.Request().Body, user)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, MsgBadJSON)
+		return echo.NewHTTPError(http.StatusBadRequest, MsgBadJSON)
 	}
 
 	alreadyExisting, err := h.users.CreateUser(user)
@@ -36,7 +37,7 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusConflict, alreadyExisting)
 	default:
 		c.Logger().Error(err)
-		return c.JSON(http.StatusInternalServerError, MsgInternalError)
+		return echo.NewHTTPError(http.StatusInternalServerError, MsgInternalError)
 	}
 }
 
@@ -49,18 +50,19 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 	case nil:
 		return c.JSON(http.StatusOK, user)
 	case domain.ErrNotFound:
-		return c.JSON(http.StatusNotFound, MsgUserNotFound)
+		return echo.NewHTTPError(http.StatusNotFound, MsgUserNotFound)
 	default:
 		c.Logger().Error(err)
-		return c.JSON(http.StatusInternalServerError, MsgInternalError)
+		return echo.NewHTTPError(http.StatusInternalServerError, MsgInternalError)
 	}
 }
 
 func (h *UserHandler) UpdateUser(c echo.Context) error {
-	user := &domain.User{}
+	user := &domain.User{Nickname: c.Param("nickname")}
+
 	err := easyjson.UnmarshalFromReader(c.Request().Body, user)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, MsgBadJSON)
+		return echo.NewHTTPError(http.StatusBadRequest, MsgBadJSON)
 	}
 
 	err = h.users.UpdateUser(user)
@@ -69,11 +71,11 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 	case nil:
 		return c.JSON(http.StatusOK, user)
 	case domain.ErrNotFound:
-		return c.JSON(http.StatusNotFound, MsgUserNotFound)
+		return echo.NewHTTPError(http.StatusNotFound, MsgUserNotFound)
 	case domain.ErrUniqueViolation:
-		return c.JSON(http.StatusConflict, MsgUserExists)
+		return echo.NewHTTPError(http.StatusConflict, MsgUserExists)
 	default:
 		c.Logger().Error(err)
-		return c.JSON(http.StatusInternalServerError, MsgInternalError)
+		return echo.NewHTTPError(http.StatusInternalServerError, MsgInternalError)
 	}
 }

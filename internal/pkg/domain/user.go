@@ -12,3 +12,6 @@ type User struct {
 	About    nullable.String
 	Email    string
 }
+
+//easyjson:json
+type UserBatch []*User

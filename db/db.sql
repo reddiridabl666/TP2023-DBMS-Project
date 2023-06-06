@@ -1,9 +1,9 @@
 create table if not exists Users(
     id serial primary key,
-    nickname varchar unique not null,
+    nickname varchar not null,
     fullname varchar not null,
     about text,
-    email varchar(256) unique not null
+    email varchar(256) not null
 );
 
 create table if not exists Forum(
@@ -41,6 +41,10 @@ create table if not exists Vote(
     value smallint check (value = 1 or value = -1),
     primary key(thread_id, author_id)
 );
+
+create unique index on users (lower(nickname));
+
+create unique index on users (lower(email));
 
 create or replace function update_vote_count() returns trigger as $$
     begin

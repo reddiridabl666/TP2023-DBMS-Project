@@ -2,12 +2,18 @@ DELIVERY_PKG = internal/pkg/delivery
 DOMAIN_PKG = internal/pkg/domain
 API_URL = http://localhost:5000/api
 
-.PHONY: easyjson fillfunc perf clear
+.PHONY: easyjson fill func perf clear run
 
 default:
 
+build:
+	docker build -t park .
+
+run: build
+	docker run --rm -p 5000:5000 --name dbms park
+
 easyjson:
-	easyjson -lower_camel_case -no_std_marshalers -pkg ${DELIVERY_PKG} ${DOMAIN_PKG}
+	easyjson -gen_build_flags="-mod=mod" -lower_camel_case -no_std_marshalers -pkg ${DELIVERY_PKG} ${DOMAIN_PKG}
 
 func:
 	./technopark-dbms-forum func -u ${API_URL} -k -r report.html

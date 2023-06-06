@@ -20,22 +20,25 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (repo *UserRepository) GetUser(nickname string) (*domain.User, error) {
-	res := &domain.User{Nickname: nickname}
+	res := &domain.User{}
 
 	err := repo.db.QueryRow(
-		`SELECT id, fullname, about, email
+		`SELECT id, nickname, fullname, about, email
 			FROM users WHERE lower(nickname) = lower($1)`, nickname).
 		Scan(
 			&res.Id,
+			&res.Nickname,
 			&res.Fullname,
 			&res.About,
 			&res.Email,
 		)
-
+	if err == sql.ErrNoRows {
+		return nil, domain.ErrNotFound
+	}
 	return res, err
 }
 
-func (repo *UserRepository) CreateUser(user *domain.User) ([]*domain.User, error) {
+func (repo *UserRepository) CreateUser(user *domain.User) (domain.UserBatch, error) {
 	_, err := repo.db.Exec(
 		`INSERT INTO users(nickname, fullname, about, email)
 				VALUES ($1, $2, $3, $4)`,
@@ -54,11 +57,8 @@ func (repo *UserRepository) CreateUser(user *domain.User) ([]*domain.User, error
 
 	rows, err := repo.db.Query(
 		`SELECT id, nickname, fullname, about, email
-		 FROM users WHERE email = $1 OR lower(name) = lower($2)`,
+		 FROM users WHERE lower(email) = lower($1) OR lower(nickname) = lower($2)`,
 		user.Email, user.Nickname)
-	if err == sql.ErrNoRows {
-		return resp, nil
-	}
 	if err != nil {
 		return nil, err
 	}
@@ -71,15 +71,31 @@ func (repo *UserRepository) CreateUser(user *domain.User) ([]*domain.User, error
 			&user.Nickname,
 			&user.Fullname,
 			&user.About,
+			&user.Email,
 		)
 		resp = append(resp, user)
 	}
 
-	return resp, nil
+	return resp, domain.ErrUniqueViolation
 }
 
 func (repo *UserRepository) UpdateUser(user *domain.User) error {
-	res, err := repo.db.Exec(
+	previous, err := repo.GetUser(user.Nickname)
+	if err != nil {
+		return err
+	}
+
+	if user.Fullname == "" {
+		user.Fullname = previous.Fullname
+	}
+	if user.Email == "" {
+		user.Email = previous.Email
+	}
+	if !user.About.Valid {
+		user.About = previous.About
+	}
+
+	_, err = repo.db.Exec(
 		`UPDATE users SET fullname = $1, about = $2, email = $3 WHERE lower(nickname) = lower($4)`,
 		user.Fullname, user.About, user.Email, user.Nickname)
 	if err != nil {
@@ -88,14 +104,7 @@ func (repo *UserRepository) UpdateUser(user *domain.User) error {
 		}
 		return err
 	}
-
-	rowCount, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowCount == 0 {
-		return domain.ErrNotFound
-	}
 	return nil
 }
+
+// curl -v -X POST --data '{"about": "Quodam abs en cui. Bene talia ipsum. Subdita. Libenter inludi veni tolerantiam pacto.","email": "alioquin.3ZIhFjfMlviW7@precescit.com","fullname": "Joshua Brown"}' http://localhost:5000/api/user/retarder.lHFMfjC63d5q7u/create
