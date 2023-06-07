@@ -9,7 +9,7 @@ create table if not exists Users(
 create table if not exists Forum(
     id serial primary key,
     author_id integer references Users not null,
-    title varchar unique not null,
+    title varchar not null,
     slug varchar not null,
     post_num integer default 0 check (post_num >= 0),
     thread_num integer default 0 check (thread_num >= 0)
@@ -41,6 +41,12 @@ create table if not exists Vote(
     thread_id integer references Thread,
     value smallint check (value = 1 or value = -1),
     primary key(thread_id, author_id)
+);
+
+create table if not exists User_Forum(
+    user_id integer references Users,
+    forum_id integer references Forum,
+    primary key(user_id, forum_id)
 );
 
 create unique index on users (lower(nickname));
@@ -109,6 +115,26 @@ create or replace function validate_parent_id() returns trigger as $$
     end;
 $$ language plpgsql;
 
+create or replace function add_forum_link_from_thread() returns trigger as $$
+    begin
+        insert into user_forum(user_id, forum_id)
+            values (NEW.author_id, NEW.forum_id)
+            on conflict do nothing;
+        return NEW;
+    end;
+$$ language plpgsql;
+
+create or replace function add_forum_link_from_post() returns trigger as $$
+    begin
+        insert into user_forum(user_id, forum_id)
+            values (NEW.author_id, (
+                select forum_id from thread where id = NEW.thread_id
+            ))
+            on conflict do nothing;
+        return NEW;
+    end;
+$$ language plpgsql;
+
 create trigger on_vote
 after insert or update or delete on Vote
     for each row execute procedure update_vote_count();
@@ -124,3 +150,11 @@ after insert or delete on Thread
 create trigger post_parent_id_validation
 before insert on Post
     for each row execute procedure validate_parent_id();
+
+create trigger add_forum_link_on_thread
+after insert on Thread
+    for each row execute procedure add_forum_link_from_thread();
+
+create trigger add_forum_link_on_post
+after insert on Post
+    for each row execute procedure add_forum_link_from_post();

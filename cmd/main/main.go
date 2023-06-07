@@ -20,12 +20,12 @@ func main() {
 	}
 
 	api := e.Group("/api")
-	api.Use(middleware.Recover(), middleware.Logger())
+	api.Use(middleware.Recover())
 
 	threadsUsecase := usecase.NewThreadUsecase(db)
 	forumsUsecase := usecase.NewForumUsecase(db)
 
-	users := delivery.NewUserHandler(db)
+	users := delivery.NewUserHandler(db, forumsUsecase)
 	service := delivery.NewServiceHandler(db)
 	forums := delivery.NewForumHandler(forumsUsecase)
 	threads := delivery.NewThreadHandler(threadsUsecase)
@@ -35,6 +35,7 @@ func main() {
 	api.GET("/user/:nickname/profile", users.GetUser)
 	api.POST("/user/:nickname/create", users.CreateUser)
 	api.POST("/user/:nickname/profile", users.UpdateUser)
+	api.GET("/forum/:slug/users", users.GetByForum)
 
 	api.POST("/forum/create", forums.Create)
 	api.GET("/forum/:slug/details", forums.Get)

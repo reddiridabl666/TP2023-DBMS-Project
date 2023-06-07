@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"forum/internal/pkg/domain"
 
@@ -112,4 +113,57 @@ func (repo *UserRepository) Update(user *domain.User) error {
 		return err
 	}
 	return nil
+}
+
+func (repo *UserRepository) GetByForum(params *domain.UserListParams) (domain.UserBatch, error) {
+	query := `SELECT u.id, u.nickname, u.fullname, u.about, u.email
+				FROM users u JOIN user_forum uf ON u.id = uf.user_id
+							JOIN forum f ON f.id = uf.forum_id
+				WHERE f.id = $1 `
+
+	args := []interface{}{params.ForumId}
+
+	if params.Since != "" {
+		query += "AND lower(u.nickname) "
+		args = append(args, params.Since)
+
+		if !params.Desc {
+			query += "> lower($2)"
+		} else {
+			query += "< lower($2)"
+		}
+	}
+
+	query += " ORDER BY lower(u.nickname)"
+	if params.Desc {
+		query += " DESC"
+	}
+
+	args = append(args, params.Limit)
+	query += fmt.Sprintf(" LIMIT $%d", len(args))
+
+	rows, err := repo.db.Query(context.Background(), query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := pgx.CollectRows[*domain.User](rows, func(row pgx.CollectableRow) (*domain.User, error) {
+		user := &domain.User{}
+		err := row.Scan(
+			&user.Id,
+			&user.Nickname,
+			&user.Fullname,
+			&user.About,
+			&user.Email,
+		)
+		return user, err
+	})
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return users, nil
+		}
+		return nil, err
+	}
+
+	return users, nil
 }
