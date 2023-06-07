@@ -31,6 +31,7 @@ create table if not exists Post(
     thread_id integer references Thread not null,
     author_id integer references Users not null,
     parent_id integer references Post,
+    path integer[] not null,
     message varchar not null,
     is_edited boolean default false,
     created_at timestamp with time zone default now()
@@ -58,6 +59,10 @@ create unique index on forum (lower(slug));
 create unique index on thread (lower(slug));
 
 create index on thread (forum_id);
+
+create index on post ((path[1]));
+
+create index on post ((path[2:]));
 
 create or replace function update_vote_count() returns trigger as $$
     begin
@@ -101,16 +106,18 @@ create or replace function update_thread_count() returns trigger as $$
     end;
 $$ language plpgsql;
 
-create or replace function validate_parent_id() returns trigger as $$
+create or replace function on_post_insertion() returns trigger as $$
     begin
         if (NEW.parent_id IS NULL) then
+            NEW.path = array[NEW.id];
             return NEW;
         end if;
 
         if (NEW.thread_id != (SELECT thread_id FROM post WHERE id = NEW.parent_id)) then
             raise exception 'Thread id should match with parent`s' USING ERRCODE = '23000';
         end if;
-
+        
+        NEW.path = (SELECT path FROM post WHERE id = NEW.parent_id) || NEW.id;
         return NEW;
     end;
 $$ language plpgsql;
@@ -147,9 +154,9 @@ create trigger on_thread
 after insert or delete on Thread
     for each row execute procedure update_thread_count();
 
-create trigger post_parent_id_validation
+create trigger before_post_insert
 before insert on Post
-    for each row execute procedure validate_parent_id();
+    for each row execute procedure on_post_insertion();
 
 create trigger add_forum_link_on_thread
 after insert on Thread

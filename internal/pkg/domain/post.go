@@ -20,3 +20,17 @@ type Post struct {
 
 //easyjson:json
 type PostBatch []*Post
+
+const (
+	SortFlat = iota
+	SortTree
+	SortParent
+)
+
+type PostListParams struct {
+	ThreadId int
+	Limit    int
+	Since    int
+	Sort     int
+	Desc     bool
+}

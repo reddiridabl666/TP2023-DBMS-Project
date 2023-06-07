@@ -106,16 +106,17 @@ func (repo *PostRepository) GetPost(id int64) (*domain.Post, error) {
 
 	err := repo.db.QueryRow(context.Background(),
 		`SELECT u.nickname, p.message, p.is_edited,
-				f.slug, p.thread_id, p.created_at
-		 FROM post p JOIN users u ON u.id = p.author_id
+				f.slug, p.parent_id, p.thread_id, p.created_at
+		 FROM post p JOIN users u  ON u.id = p.author_id
 		 			 JOIN thread t ON t.id = p.thread_id
-					 JOIN forum f ON f.id = t.forum_id
+					 JOIN forum f  ON f.id = t.forum_id
 		 WHERE p.id = $1`, id).
 		Scan(
 			&post.Author,
 			&post.Message,
 			&post.IsEdited,
 			&post.Forum,
+			&post.Parent,
 			&post.Thread,
 			&post.Created,
 		)
@@ -158,4 +159,196 @@ func (repo *PostRepository) Update(post *domain.Post) error {
 	post.Thread = previous.Thread
 
 	return nil
+}
+
+func (repo *PostRepository) GetPostsFlat(params *domain.PostListParams) (domain.PostBatch, error) {
+	query := `SELECT p.id, u.nickname, p.message, p.is_edited,
+					 f.slug, p.parent_id, p.thread_id, p.created_at
+				FROM post p JOIN users u  ON u.id = p.author_id
+					 		JOIN thread t ON t.id = p.thread_id
+							JOIN forum f  ON f.id = t.forum_id
+				WHERE p.thread_id = $1 `
+
+	args := []interface{}{params.ThreadId}
+
+	if params.Since > 0 {
+		args = append(args, params.Since)
+		if !params.Desc {
+			query += "AND p.id > $2"
+		} else {
+			query += "AND p.id < $2"
+		}
+	}
+
+	query += " ORDER BY p.id "
+
+	if params.Desc {
+		query += "DESC "
+	}
+
+	args = append(args, params.Limit)
+	query += fmt.Sprintf("LIMIT $%d", len(args))
+
+	rows, err := repo.db.Query(context.Background(), query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := pgx.CollectRows[*domain.Post](rows, func(row pgx.CollectableRow) (*domain.Post, error) {
+		post := &domain.Post{}
+		err := row.Scan(
+			&post.Id,
+			&post.Author,
+			&post.Message,
+			&post.IsEdited,
+			&post.Forum,
+			&post.Parent,
+			&post.Thread,
+			&post.Created,
+		)
+		return post, err
+	})
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return posts, nil
+		}
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (repo *PostRepository) GetPostsTree(params *domain.PostListParams) (domain.PostBatch, error) {
+	query := `SELECT p.id, u.nickname, p.message, p.is_edited,
+					 f.slug, p.parent_id, p.thread_id, p.created_at
+			  FROM post p JOIN users u  ON u.id = p.author_id
+						  JOIN thread t ON t.id = p.thread_id
+						  JOIN forum f  ON f.id = t.forum_id
+			  WHERE p.thread_id = $1 `
+
+	args := []interface{}{params.ThreadId}
+
+	if params.Since > 0 {
+		args = append(args, params.Since)
+		if !params.Desc {
+			query += "AND p.path > (SELECT path FROM post WHERE id = $2)"
+		} else {
+			query += "AND p.path < (SELECT path FROM post WHERE id = $2)"
+		}
+	}
+	query += " ORDER BY p.path"
+
+	if params.Desc {
+		query += " DESC"
+	}
+
+	args = append(args, params.Limit)
+	query += fmt.Sprintf(" LIMIT $%d", len(args))
+
+	rows, err := repo.db.Query(context.Background(), query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := pgx.CollectRows[*domain.Post](rows, func(row pgx.CollectableRow) (*domain.Post, error) {
+		post := &domain.Post{}
+		err := row.Scan(
+			&post.Id,
+			&post.Author,
+			&post.Message,
+			&post.IsEdited,
+			&post.Forum,
+			&post.Parent,
+			&post.Thread,
+			&post.Created,
+		)
+		return post, err
+	})
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return posts, nil
+		}
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (repo *PostRepository) GetPostsParent(params *domain.PostListParams) (domain.PostBatch, error) {
+	query := `WITH parents AS (
+			  SELECT p.id, u.nickname, p.message, p.is_edited,
+					 f.slug, p.parent_id, p.thread_id, p.created_at,
+					 p.path as path
+			  FROM post p JOIN users u  ON u.id = p.author_id
+						  JOIN thread t ON t.id = p.thread_id
+						  JOIN forum f  ON f.id = t.forum_id
+			  WHERE p.thread_id = $1 AND p.id = p.path[1] `
+
+	args := []interface{}{params.ThreadId}
+
+	if params.Since > 0 {
+		args = append(args, params.Since)
+		if !params.Desc {
+			query += "AND p.id > (SELECT path[1] FROM post WHERE id = $2)"
+		} else {
+			query += "AND p.id < (SELECT path[1] FROM post WHERE id = $2)"
+		}
+	}
+
+	query += " ORDER BY p.id"
+	if params.Desc {
+		query += " DESC"
+	}
+
+	args = append(args, params.Limit)
+	query += fmt.Sprintf(" LIMIT $%d", len(args))
+
+	query += `), final AS (
+				SELECT p.id, u.nickname, p.message, p.is_edited,
+					   f.slug, p.parent_id, p.thread_id, p.created_at,
+					   p.path as path
+				FROM post p JOIN users u  ON u.id = p.author_id
+						   	JOIN thread t ON t.id = p.thread_id
+							JOIN forum f  ON f.id = t.forum_id
+					   		JOIN parents  ON parents.id = p.path[1]
+		   		WHERE p.id != p.path[1]
+		 		UNION ALL
+		 		SELECT * FROM parents)
+			SELECT id, nickname, message, is_edited,
+				   slug, parent_id, thread_id, created_at
+				FROM final ORDER BY path[1]`
+
+	if params.Desc {
+		query += " DESC"
+	}
+
+	query += " NULLS FIRST, path[2:]"
+
+	rows, err := repo.db.Query(context.Background(), query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := pgx.CollectRows[*domain.Post](rows, func(row pgx.CollectableRow) (*domain.Post, error) {
+		post := &domain.Post{}
+		err := row.Scan(
+			&post.Id,
+			&post.Author,
+			&post.Message,
+			&post.IsEdited,
+			&post.Forum,
+			&post.Parent,
+			&post.Thread,
+			&post.Created,
+		)
+		return post, err
+	})
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return posts, nil
+		}
+		return nil, err
+	}
+
+	return posts, nil
 }

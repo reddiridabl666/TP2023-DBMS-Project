@@ -48,6 +48,7 @@ func main() {
 	api.POST("/thread/:slug_or_id/create", posts.AddPosts)
 	api.GET("/post/:id/details", posts.GetPost)
 	api.POST("/post/:id/details", posts.UpdatePost)
+	api.GET("/thread/:slug_or_id/posts", posts.GetPosts)
 
 	api.POST("/thread/:slug_or_id/vote", votes.AddVote)
 

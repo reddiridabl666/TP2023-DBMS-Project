@@ -15,7 +15,7 @@ import (
 )
 
 type PostHandler struct {
-	posts   *repository.PostRepository
+	posts   *usecase.PostUsecase
 	users   *repository.UserRepository
 	threads *usecase.ThreadUsecase
 	forums  *usecase.ForumUsecase
@@ -23,7 +23,7 @@ type PostHandler struct {
 
 func NewPostHandler(db *pgxpool.Pool, threads *usecase.ThreadUsecase, forums *usecase.ForumUsecase) *PostHandler {
 	return &PostHandler{
-		posts:   repository.NewPostRepository(db),
+		posts:   usecase.NewPostUsecase(db),
 		threads: threads,
 		forums:  forums,
 		users:   repository.NewUserRepository(db),
@@ -45,7 +45,6 @@ func (h *PostHandler) AddPosts(c echo.Context) error {
 	case domain.ErrNotFound:
 		return echo.NewHTTPError(http.StatusNotFound, MsgThreadNotFound)
 	default:
-		c.Logger().Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -62,7 +61,6 @@ func (h *PostHandler) AddPosts(c echo.Context) error {
 	case domain.ErrNotFound:
 		return echo.NewHTTPError(http.StatusNotFound, MsgUserNotFound)
 	default:
-		c.Logger().Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 }
@@ -163,4 +161,57 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+}
+
+func (h *PostHandler) GetPosts(c echo.Context) error {
+	thread, err := h.threads.Get(c.Param("slug_or_id"))
+
+	switch err {
+	case nil:
+		break
+	case domain.ErrNotFound:
+		return echo.NewHTTPError(http.StatusNotFound, MsgThreadNotFound)
+	default:
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	params := getPostListParams(c)
+	params.ThreadId = int(thread.Id)
+
+	posts, err := h.posts.GetPosts(params)
+	switch err {
+	case nil:
+		return c.JSON(http.StatusOK, posts)
+	case domain.ErrInvalidArgument:
+		return echo.NewHTTPError(http.StatusBadRequest)
+	default:
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+}
+
+func getPostListParams(c echo.Context) *domain.PostListParams {
+	res := &domain.PostListParams{}
+
+	res.Limit, _ = strconv.Atoi(c.QueryParam("limit"))
+
+	if res.Limit < 1 {
+		res.Limit = 100
+	}
+
+	if c.QueryParam("desc") == "true" {
+		res.Desc = true
+	}
+
+	sort := c.QueryParam("sort")
+	switch sort {
+	case "tree":
+		res.Sort = domain.SortTree
+	case "parent_tree":
+		res.Sort = domain.SortParent
+	default:
+		res.Sort = domain.SortFlat
+	}
+
+	res.Since, _ = strconv.Atoi(c.QueryParam("since"))
+	return res
 }
