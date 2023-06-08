@@ -20,7 +20,7 @@ func main() {
 	}
 
 	api := e.Group("/api")
-	api.Use(middleware.Recover())
+	api.Use(middleware.Recover(), middleware.Logger())
 
 	threadsUsecase := usecase.NewThreadUsecase(db)
 	forumsUsecase := usecase.NewForumUsecase(db)

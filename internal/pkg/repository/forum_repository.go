@@ -62,7 +62,7 @@ func (repo *ForumRepository) Get(slug string) (*domain.Forum, error) {
 
 	err := repo.db.QueryRow(context.Background(),
 		`SELECT f.id, u.nickname, f.title,
-			f.slug, f.post_num, f.thread_num
+				f.slug, f.post_num, f.thread_num
 		 FROM forum f JOIN users u ON f.author_id = u.id
 		 WHERE lower(f.slug) = lower($1)`, slug).
 		Scan(

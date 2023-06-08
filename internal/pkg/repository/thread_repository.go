@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"time"
 
 	"forum/internal/pkg/domain"
 	"forum/internal/pkg/utils"
@@ -28,7 +27,9 @@ func (repo *ThreadRepository) Create(forumId, authorId int, thread *domain.Threa
 	err := repo.db.QueryRow(context.Background(),
 		`INSERT INTO thread(forum_id, author_id, title, message, slug, created_at)
 			VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-		forumId, authorId, thread.Title, thread.Message, thread.Slug, thread.Created).
+		forumId, authorId, thread.Title, thread.Message,
+		thread.Slug, thread.Created.UTC().UnixNano(),
+	).
 		Scan(&thread.Id)
 
 	if err == nil {
@@ -66,7 +67,7 @@ func (repo *ThreadRepository) GetById(id int) (*domain.Thread, error) {
 	thread := &domain.Thread{}
 
 	err := repo.db.QueryRow(context.Background(),
-		`SELECT t.id, t.title, u.nickname, f.slug,
+		`SELECT t.id, t.title, u.nickname, f.slug, t.forum_id,
 			 	t.message, t.rating, t.slug, t.created_at
 		 FROM thread t JOIN users u ON t.author_id = u.id
 		 			   JOIN forum f ON t.forum_id  = f.id
@@ -76,6 +77,7 @@ func (repo *ThreadRepository) GetById(id int) (*domain.Thread, error) {
 			&thread.Title,
 			&thread.Author,
 			&thread.Forum,
+			&thread.ForumId,
 			&thread.Message,
 			&thread.Votes,
 			&thread.Slug,
@@ -97,7 +99,7 @@ func (repo *ThreadRepository) GetBySlug(slug string) (*domain.Thread, error) {
 	thread := &domain.Thread{}
 
 	err := repo.db.QueryRow(context.Background(),
-		`SELECT t.id, t.title, u.nickname, f.slug,
+		`SELECT t.id, t.title, u.nickname, f.slug, t.forum_id,
 			 	t.message, t.rating, t.slug, t.created_at
 		 FROM thread t JOIN users u ON t.author_id = u.id
 		 			   JOIN forum f ON t.forum_id  = f.id
@@ -107,6 +109,7 @@ func (repo *ThreadRepository) GetBySlug(slug string) (*domain.Thread, error) {
 			&thread.Title,
 			&thread.Author,
 			&thread.Forum,
+			&thread.ForumId,
 			&thread.Message,
 			&thread.Votes,
 			&thread.Slug,
@@ -148,8 +151,8 @@ func (repo *ThreadRepository) GetByForum(params *domain.ThreadListParams) (domai
 	if !params.Desc {
 		query += " >= $2 ORDER BY t.created_at"
 	} else {
-		if params.Since.Equal(time.Time{}) {
-			params.Since = utils.MaxTime
+		if params.Since == 0 {
+			params.Since = utils.MaxTime.UnixNano()
 		}
 		query += " <= $2 ORDER BY t.created_at DESC"
 	}

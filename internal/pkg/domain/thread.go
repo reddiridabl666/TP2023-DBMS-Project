@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"time"
-
 	"forum/internal/pkg/utils"
 	"forum/internal/pkg/utils/nullable"
 )
@@ -13,6 +11,7 @@ type Thread struct {
 	Title   string
 	Author  string
 	Forum   string
+	ForumId int `json:"-"`
 	Message string
 	Votes   int32           `json:"votes,omitempty"`
 	Slug    nullable.String `json:"slug,omitempty"`
@@ -26,6 +25,6 @@ type ThreadListParams struct {
 	Forum   string
 	ForumId int
 	Limit   int
-	Since   time.Time
+	Since   int64
 	Desc    bool
 }

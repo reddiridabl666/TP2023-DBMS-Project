@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"time"
-
+	"forum/internal/pkg/utils"
 	"forum/internal/pkg/utils/nullable"
 )
 
@@ -15,7 +14,7 @@ type Post struct {
 	IsEdited bool `json:"isEdited,omitempty"`
 	Forum    string
 	Thread   int32
-	Created  time.Time
+	Created  utils.Time
 }
 
 //easyjson:json

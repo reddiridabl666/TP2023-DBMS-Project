@@ -105,8 +105,19 @@ func getThreadListParams(c echo.Context) *domain.ThreadListParams {
 		res.Desc = true
 	}
 
-	res.Since, err = time.Parse("2006-01-02T15:04:05.000Z", c.QueryParam("since"))
-	c.Logger().Error(err)
+	since := c.QueryParam("since")
 
+	if since == "" {
+		return res
+	}
+
+	tm, err := time.Parse("2006-01-02T15:04:05.000-07:00", since)
+	if err != nil {
+		tm, err = time.Parse("2006-01-02T15:04:05.000Z", since)
+		if err != nil {
+			panic(err)
+		}
+	}
+	res.Since = tm.UTC().UnixNano()
 	return res
 }
