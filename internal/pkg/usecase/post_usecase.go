@@ -8,14 +8,12 @@ import (
 )
 
 type PostUsecase struct {
-	posts   *repository.PostRepository
-	threads *repository.ThreadRepository
+	posts *repository.PostRepository
 }
 
 func NewPostUsecase(db *pgxpool.Pool) *PostUsecase {
 	return &PostUsecase{
-		posts:   repository.NewPostRepository(db),
-		threads: repository.NewThreadRepository(db),
+		posts: repository.NewPostRepository(db),
 	}
 }
 
@@ -31,14 +29,27 @@ func (u *PostUsecase) Update(post *domain.Post) error {
 	return u.posts.Update(post)
 }
 
-func (u *PostUsecase) GetPosts(params *domain.PostListParams) (domain.PostBatch, error) {
+func (u *PostUsecase) GetPosts(thread *domain.Thread, params *domain.PostListParams) (domain.PostBatch, error) {
+	var posts domain.PostBatch
+	var err error
+
 	switch params.Sort {
 	case domain.SortFlat:
-		return u.posts.GetPostsFlat(params)
+		posts, err = u.posts.GetPostsFlat(params)
 	case domain.SortTree:
-		return u.posts.GetPostsTree(params)
+		posts, err = u.posts.GetPostsTree(params)
 	case domain.SortParent:
-		return u.posts.GetPostsParent(params)
+		posts, err = u.posts.GetPostsParent(params)
+	default:
+		return nil, domain.ErrInvalidArgument
 	}
-	return nil, domain.ErrInvalidArgument
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, post := range posts {
+		post.Forum = thread.Forum
+	}
+	return posts, nil
 }

@@ -60,6 +60,8 @@ create unique index on thread (lower(slug));
 
 create index on thread (forum_id);
 
+create index on post (thread_id);
+
 create index on post ((path[1]));
 
 create index on post ((path[2:]));

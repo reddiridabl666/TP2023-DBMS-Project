@@ -193,10 +193,8 @@ func (repo *PostRepository) Update(post *domain.Post) error {
 
 func (repo *PostRepository) GetPostsFlat(params *domain.PostListParams) (domain.PostBatch, error) {
 	query := `SELECT p.id, u.nickname, p.message, p.is_edited,
-					 f.slug, p.parent_id, p.thread_id, p.created_at
+					 p.parent_id, p.thread_id, p.created_at
 				FROM post p JOIN users u  ON u.id = p.author_id
-					 		JOIN thread t ON t.id = p.thread_id
-							JOIN forum f  ON f.id = t.forum_id
 				WHERE p.thread_id = $1 `
 
 	args := []interface{}{params.ThreadId}
@@ -231,7 +229,6 @@ func (repo *PostRepository) GetPostsFlat(params *domain.PostListParams) (domain.
 			&post.Author,
 			&post.Message,
 			&post.IsEdited,
-			&post.Forum,
 			&post.Parent,
 			&post.Thread,
 			&post.Created,
@@ -250,10 +247,8 @@ func (repo *PostRepository) GetPostsFlat(params *domain.PostListParams) (domain.
 
 func (repo *PostRepository) GetPostsTree(params *domain.PostListParams) (domain.PostBatch, error) {
 	query := `SELECT p.id, u.nickname, p.message, p.is_edited,
-					 f.slug, p.parent_id, p.thread_id, p.created_at
+					 p.parent_id, p.thread_id, p.created_at
 			  FROM post p JOIN users u  ON u.id = p.author_id
-						  JOIN thread t ON t.id = p.thread_id
-						  JOIN forum f  ON f.id = t.forum_id
 			  WHERE p.thread_id = $1 `
 
 	args := []interface{}{params.ThreadId}
@@ -287,7 +282,6 @@ func (repo *PostRepository) GetPostsTree(params *domain.PostListParams) (domain.
 			&post.Author,
 			&post.Message,
 			&post.IsEdited,
-			&post.Forum,
 			&post.Parent,
 			&post.Thread,
 			&post.Created,
@@ -307,11 +301,9 @@ func (repo *PostRepository) GetPostsTree(params *domain.PostListParams) (domain.
 func (repo *PostRepository) GetPostsParent(params *domain.PostListParams) (domain.PostBatch, error) {
 	query := `WITH parents AS (
 			  SELECT p.id, u.nickname, p.message, p.is_edited,
-					 f.slug, p.parent_id, p.thread_id, p.created_at,
+					 p.parent_id, p.thread_id, p.created_at,
 					 p.path as path
 			  FROM post p JOIN users u  ON u.id = p.author_id
-						  JOIN thread t ON t.id = p.thread_id
-						  JOIN forum f  ON f.id = t.forum_id
 			  WHERE p.thread_id = $1 AND p.id = p.path[1] `
 
 	args := []interface{}{params.ThreadId}
@@ -335,17 +327,15 @@ func (repo *PostRepository) GetPostsParent(params *domain.PostListParams) (domai
 
 	query += `), final AS (
 				SELECT p.id, u.nickname, p.message, p.is_edited,
-					   f.slug, p.parent_id, p.thread_id, p.created_at,
+					   p.parent_id, p.thread_id, p.created_at,
 					   p.path as path
 				FROM post p JOIN users u  ON u.id = p.author_id
-						   	JOIN thread t ON t.id = p.thread_id
-							JOIN forum f  ON f.id = t.forum_id
 					   		JOIN parents  ON parents.id = p.path[1]
 		   		WHERE p.id != p.path[1]
 		 		UNION ALL
 		 		SELECT * FROM parents)
 			SELECT id, nickname, message, is_edited,
-				   slug, parent_id, thread_id, created_at
+				   parent_id, thread_id, created_at
 				FROM final ORDER BY path[1]`
 
 	if params.Desc {
@@ -366,7 +356,6 @@ func (repo *PostRepository) GetPostsParent(params *domain.PostListParams) (domai
 			&post.Author,
 			&post.Message,
 			&post.IsEdited,
-			&post.Forum,
 			&post.Parent,
 			&post.Thread,
 			&post.Created,

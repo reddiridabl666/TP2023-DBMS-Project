@@ -178,7 +178,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 	params := getPostListParams(c)
 	params.ThreadId = int(thread.Id)
 
-	posts, err := h.posts.GetPosts(params)
+	posts, err := h.posts.GetPosts(thread, params)
 	switch err {
 	case nil:
 		return c.JSON(http.StatusOK, posts)

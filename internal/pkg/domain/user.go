@@ -18,7 +18,6 @@ type UserBatch []*User
 
 type UserListParams struct {
 	ForumId int
-	Forum   string
 	Limit   int
 	Since   string
 	Desc    bool
